@@ -1,6 +1,6 @@
 import { defineConfig } from 'astro/config';
 
 export default defineConfig({
-  site: 'https://YOUR-GITHUB-USERNAME.github.io',
-  base: '/YOUR-REPO-NAME/',
+  site: 'https://thekalihypothesis-ctrl.github.io',
+  base: '/mindar-astro-test/',
 });
