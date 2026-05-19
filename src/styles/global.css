@@ -1,0 +1,73 @@
+:root {
+  --bg: #050505;
+  --fg: #ffffff;
+  --cyan: #00ffee;
+  --panel: rgba(0, 0, 0, 0.72);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "Courier New", monospace;
+}
+
+body { overflow: hidden; }
+
+.ar-shell {
+  position: fixed;
+  inset: 0;
+  background: #000;
+}
+
+.hud {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  top: 12px;
+  z-index: 10;
+  padding: 12px 14px;
+  border: 1px solid rgba(0, 255, 238, 0.45);
+  background: var(--panel);
+  box-shadow: 0 0 18px rgba(0, 255, 238, 0.18);
+  pointer-events: none;
+}
+
+.hud h1 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  letter-spacing: 0.08em;
+  color: var(--cyan);
+}
+
+.hud p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  opacity: 0.85;
+}
+
+.marker-preview {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  z-index: 10;
+  width: 96px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(0, 255, 238, 0.45);
+}
+
+.marker-preview img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+a-scene {
+  width: 100vw;
+  height: 100vh;
+}

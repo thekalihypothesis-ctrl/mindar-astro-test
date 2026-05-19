@@ -1,0 +1,69 @@
+---
+import '../styles/global.css';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>Kali MindAR Astro Test</title>
+
+    <!-- A-Frame + MindAR v1.1.x CDN setup -->
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-aframe.prod.js"></script>
+  </head>
+
+  <body>
+    <main class="ar-shell">
+      <section class="hud">
+        <h1>KALI MARKER TEST</h1>
+        <p>Allow camera access, then scan the Kali marker image. A cyan panel should appear when tracking works.</p>
+      </section>
+
+      <div class="marker-preview" aria-label="Marker preview">
+        <img src="/assets/kali-marker-source.png" alt="Kali marker source image" />
+      </div>
+
+      <a-scene
+        mindar-image="imageTargetSrc: /targets.mind; autoStart: true; uiScanning: yes; uiLoading: yes; uiError: yes;"
+        color-space="sRGB"
+        renderer="colorManagement: true, physicallyCorrectLights"
+        embedded
+        vr-mode-ui="enabled: false"
+        device-orientation-permission-ui="enabled: false"
+      >
+        <a-assets>
+          <img id="kaliMarker" src="/assets/kali-marker-source.png" />
+        </a-assets>
+
+        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+        <!-- targetIndex: 0 = first image compiled into targets.mind -->
+        <a-entity mindar-image-target="targetIndex: 0">
+          <a-plane
+            position="0 0 0"
+            width="1"
+            height="1"
+            material="color: #00ffee; opacity: 0.22; transparent: true"
+          ></a-plane>
+
+          <a-plane
+            src="#kaliMarker"
+            position="0 0 0.01"
+            width="0.72"
+            height="0.72"
+            material="transparent: true"
+          ></a-plane>
+
+          <a-text
+            value="TARGET LOCKED"
+            position="-0.43 -0.62 0.04"
+            width="1.25"
+            align="center"
+            color="#00ffee"
+          ></a-text>
+        </a-entity>
+      </a-scene>
+    </main>
+  </body>
+</html>
