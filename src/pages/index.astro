@@ -1,45 +1,90 @@
 ---
 import '../styles/global.css';
+
+const base = import.meta.env.BASE_URL || '/';
+
+const markerPath = `${base}assets/kali-marker-source.png`;
+const targetPath = `${base}targets.mind`;
 ---
+
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+
     <title>Kali MindAR Astro Test</title>
 
-    <!-- A-Frame + MindAR v1.1.x CDN setup -->
+    <!-- A-Frame -->
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+
+    <!-- MindAR -->
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-aframe.prod.js"></script>
   </head>
 
   <body>
     <main class="ar-shell">
+
+      <!-- HUD -->
       <section class="hud">
         <h1>KALI MARKER TEST</h1>
-        <p>Allow camera access, then scan the Kali marker image. A cyan panel should appear when tracking works.</p>
+
+        <p id="status-text">
+          Waiting for A-Frame...
+        </p>
+
+        <button
+          id="start-ar-button"
+          class="start-button"
+          type="button"
+          disabled
+        >
+          Waiting For MindAR...
+        </button>
       </section>
 
-      <div class="marker-preview" aria-label="Marker preview">
-        <img src="/assets/kali-marker-source.png" alt="Kali marker source image" />
+      <!-- Marker Preview -->
+      <div class="marker-preview">
+        <img
+          src={markerPath}
+          alt="Kali Marker"
+        />
       </div>
 
+      <!-- AR Scene -->
       <a-scene
-        mindar-image="imageTargetSrc: /targets.mind; autoStart: true; uiScanning: yes; uiLoading: yes; uiError: yes;"
-        color-space="sRGB"
-        renderer="colorManagement: true, physicallyCorrectLights"
+        mindar-image={`imageTargetSrc: ${targetPath}; autoStart: false; uiScanning: yes; uiLoading: yes; uiError: yes;`}
         embedded
+        color-space="sRGB"
+        renderer="colorManagement: true;"
         vr-mode-ui="enabled: false"
         device-orientation-permission-ui="enabled: false"
       >
+
         <a-assets>
-          <img id="kaliMarker" src="/assets/kali-marker-source.png" />
+          <img
+            id="kaliMarker"
+            src={markerPath}
+            crossorigin="anonymous"
+          />
         </a-assets>
 
-        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+        <a-camera
+          position="0 0 0"
+          look-controls="enabled: false"
+        ></a-camera>
 
-        <!-- targetIndex: 0 = first image compiled into targets.mind -->
-        <a-entity mindar-image-target="targetIndex: 0">
+        <!-- TARGET -->
+        <a-entity
+          id="kali-target"
+          mindar-image-target="targetIndex: 0"
+        >
+
+          <!-- Cyan Detection Plane -->
           <a-plane
             position="0 0 0"
             width="1"
@@ -47,6 +92,7 @@ import '../styles/global.css';
             material="color: #00ffee; opacity: 0.22; transparent: true"
           ></a-plane>
 
+          <!-- Marker Preview -->
           <a-plane
             src="#kaliMarker"
             position="0 0 0.01"
@@ -55,6 +101,7 @@ import '../styles/global.css';
             material="transparent: true"
           ></a-plane>
 
+          <!-- Text -->
           <a-text
             value="TARGET LOCKED"
             position="-0.43 -0.62 0.04"
@@ -62,8 +109,90 @@ import '../styles/global.css';
             align="center"
             color="#00ffee"
           ></a-text>
+
         </a-entity>
+
       </a-scene>
+
     </main>
+
+    <script>
+  const setStatus = (message) => {
+    const status = document.getElementById('status-text');
+    if (status) status.textContent = message;
+    console.log('[Kali MindAR]', message);
+  };
+
+  window.addEventListener('load', () => {
+    const scene = document.querySelector('a-scene');
+    const button = document.getElementById('start-ar-button');
+    const target = document.getElementById('kali-target');
+
+    if (!scene || !button) {
+      setStatus('Scene or button missing.');
+      return;
+    }
+
+    const startMindARCheck = () => {
+      setStatus('A-Frame loaded. Checking MindAR...');
+
+      const timer = setInterval(() => {
+        const system = scene.systems?.['mindar-image-system'];
+
+        if (system && typeof system.start === 'function') {
+          clearInterval(timer);
+
+          setStatus('MindAR ready. Tap Start Camera.');
+          button.disabled = false;
+          button.textContent = 'Start Camera';
+
+          button.onclick = async () => {
+            try {
+              button.disabled = true;
+              button.textContent = 'Starting...';
+              setStatus('Requesting camera permission...');
+
+              await system.start();
+
+              setStatus('Camera started. Scan marker.');
+              button.style.display = 'none';
+            } catch (error) {
+              console.error(error);
+              setStatus('Camera failed. Check permission/browser.');
+              button.disabled = false;
+              button.textContent = 'Try Again';
+            }
+          };
+        }
+      }, 500);
+    };
+
+    if (scene.hasLoaded) {
+      startMindARCheck();
+    } else {
+      scene.addEventListener('loaded', startMindARCheck, { once: true });
+    }
+
+    scene.addEventListener('arReady', () => {
+      setStatus('AR READY. Scan marker.');
+    });
+
+    scene.addEventListener('arError', () => {
+      setStatus('AR ERROR. Camera could not start.');
+      button.disabled = false;
+      button.textContent = 'Try Again';
+    });
+
+    if (target) {
+      target.addEventListener('targetFound', () => {
+        setStatus('TARGET LOCKED.');
+      });
+
+      target.addEventListener('targetLost', () => {
+        setStatus('TARGET LOST.');
+      });
+    }
+  });
+</script>
   </body>
 </html>
